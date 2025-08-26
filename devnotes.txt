@@ -1,0 +1,101 @@
+$ time python flare-backend/describe_photo.py photos/photo1.png  
+photos/photo2.png photos/photo3.png --name "peter" --app "elitedate"
+
+=== Photo Descriptions ===
+Photo 1: Black-and-white portrait against a textured wall. He wears a fitted tank top, showing an athletic build and a calm, confident expression.
+Photo 2: Outdoors by a large tree with a road bike propped beside him. Dressed in cycling gear—gloves, beanie, and sunglasses—he takes a relaxed break on a trail.
+Photo 3: Selfie at a snowy race finish area. In winter gear, sunglasses, and a headband marked “Spartan,” he looks energized amid the event crowd.
+
+=== Themes ===
+Athletic and outdoorsy with a focus on endurance sports. Strong presence, minimalist style, and a steady, upbeat vibe. Clear interests in cycling, training, and organized race events, often in nature and cold-weather settings.
+
+=== Dating Profile ===
+Hi, I’m peter. My happy places: in the saddle on a long ride, and lined up under a finish arch with snow crunching underfoot. Friends say I’m steady and upbeat; I show up, put in the work, and still laugh through the mud and cold. I value simplicity—good company, clear goals, and time outdoors. Road cycling, obstacle-style races, and focused training keep me balanced. If you enjoy exploring parks or cheering at events, we’ll get along.
+
+=== Conversation Starters ===
+1. Your ideal ride: flat and fast or a hilly route with big views?
+2. At a winter race, which obstacle would you crush—and which one would make you laugh?
+3. Post-ride tradition: quiet stretch in the park or a celebratory hot drink at the finish?
+
+real    0m46,274s
+user    0m0,626s
+sys     0m0,089s
+
+
+---
+
+$ time python flare-backend/describe_photo.py photos/photo1.png  photos/photo2.png photos/photo3.png photos/photo4.png photos/photo5.png --name "peter" --app "elitedate"
+
+=== Photo Descriptions ===
+Photo 1: Black-and-white portrait against a speckled concrete wall. He’s in a dark tank top, relaxed posture, showing a calm half-smile and athletic build.
+Photo 2: Outdoor shot by a large tree with a road bike leaned against it. He’s in cycling gear with gloves, headwear, and a sport watch, taking a break on a trail.
+Photo 3: Selfie at a snowy event with a big inflatable FINISH arch in the background. Wearing sunglasses, a headband with the word “SPARTAN,” and a bright jacket among other participants.
+Photo 4: Action photo surfing a clean wave in a wetsuit, carving with spray in the air. Several other surfers wait in the lineup behind.
+Photo 5: Overcast beach scene with him in a wetsuit holding bright orange swim floats. The word “IRELAND” is written in the sand near the shoreline.
+
+=== Themes ===
+Athletic, outdoors-focused lifestyle with endurance vibes; cycling, winter race events, surfing, and open-water swimming. Minimalist, confident presentation and a love for nature and motion.
+
+=== Dating Profile ===
+Hi, I’m peter. I keep life simple and full of motion—morning rides on a classic road bike, long days that end at a finish arch in the snow, and any excuse to slip into a wetsuit and chase clean lines on a wave. I value consistency, kindness, and a good recovery coffee. When I’m not training, you’ll find me exploring new trails, tinkering with gear, or planning the next cold‑water swim. Looking for someone who smiles easily, appreciates fresh air, and enjoys a little friendly challenge. If your idea of a great date includes a scenic ride, a beach walk, and a relaxed dinner after—let’s align our calendars.
+
+=== Conversation Starters ===
+1. Pick our weekend challenge: sunrise bike ride or sunset beach swim?
+2. What’s your go-to post‑finish treat—hot chocolate or celebratory pizza?
+3. Would you try surfing in chilly water if I bring an extra wetsuit, or are we cheering from shore?
+
+real    0m58,352s
+user    0m0,648s
+sys     0m0,093s
+
+
+
+
+----
+
+
+freemium:
+
+- two profile generations (1 - 5 photos)
+- one set of (3) openers (requires 1 photo)
+
+
+---
+
+
+sudo -iu postgres09:46 [quirkfly: ~/job_stuff/prj/flare/flare-frontend] 26m58s 130 $ sudo -iu postgres
+[sudo] password for quirkfly: 
+postgres@oreus:~$ psql
+psql (14.18 (Ubuntu 14.18-0ubuntu0.22.04.1))
+Type "help" for help.
+
+postgres=# ^[[200~CREATE ROLE flare_user WITH LOGIN PASSWORD 'REPLACE_ME_STRONG_PASSWORD';
+ERROR:  syntax error at or near "
+INE 1: CREATE ROLE flare_user WITH LOGIN PASSWORD 'REPLACE_ME...
+        ^
+postgres=# -- (Optional) Allow the user to create databases (usually not needed)
+postgres=# -- ALTER ROLE flare_user CREATEDB;~^C
+postgres=# CREATE ROLE flaire_adm WITH LOGIN PASSWORD 'foobar';
+CREATE ROLE
+postgres=# CREATE DATABASE flaire_db OWNER flaire_adm;
+CREATE DATABASE
+postgres=# GRANT ALL PRIVILEGES ON DATABASE flaire_db TO flaire_adm;
+GRANT
+postgres=# \q
+postgres@oreus:~$ ^C
+postgres@oreus:~$ sudo systemctl reload postgresql
+[sudo] password for postgres: 
+sudo: a password is required
+postgres@oreus:~$ exit
+logout
+09:49 [quirkfly: ~/job_stuff/prj/flare/flare-frontend] 1 $ sudo systemctl reload postgresql
+09:49 [quirkfly: ~/job_stuff/prj/flare/flare-frontend] 2m41s $ psql -U flaire_adm -d flaire_db -h 127.0.0.1 -W
+Password: 
+psql (14.18 (Ubuntu 14.18-0ubuntu0.22.04.1))
+SSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, bits: 256, compression: off)
+Type "help" for help.
+
+flaire_db=> \
+invalid command \
+Try \? for help.
+flaire_db=> \q
