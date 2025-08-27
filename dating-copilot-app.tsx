@@ -25,7 +25,7 @@ const DatingCopilot = () => {
   const openerSteps = ['Analyzing Photo', 'Generating Starters', 'Finalizing'];
   const [openerProgressIndex, setOpenerProgressIndex] = useState(0);
   const [showPaywall, setShowPaywall] = useState(false);
-  const { user, upgradePlan, signOut } = useAuth();
+  const { user, upgradePlan, signOut, refreshUser } = useAuth();
   const userPlan = user?.plan || 'free';
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<'signin'|'signup'>('signin');
@@ -33,6 +33,8 @@ const DatingCopilot = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [paymentStep, setPaymentStep] = useState('plans');
+  const [upgradeNotice, setUpgradeNotice] = useState<string | null>(null);
+  const [errorToast, setErrorToast] = useState<string | null>(null);
   const progressSteps = ['Processing Photos', 'Generating Profile', 'Finalizing'];
   const [progressIndex, setProgressIndex] = useState(0);
   const profileFileRef = useRef<HTMLInputElement | null>(null);
@@ -101,17 +103,9 @@ const DatingCopilot = () => {
       setShowAuthModal(true);
       return;
     }
-    setPaymentStep('payment');
-    await new Promise(r => setTimeout(r, 800));
-    try {
-      await upgradePlan(planKey);
-      setUsageCount({ profiles: 0, openers: 0 });
-      setPaymentStep('success');
-      setTimeout(() => { setShowPaymentModal(false); setPaymentStep('plans'); }, 1200);
-    } catch (e) {
-      console.error('Upgrade failed', e);
-      setPaymentStep('plans');
-    }
+    // Real checkout: redirect will occur
+    setPaymentStep('redirect');
+  try { await upgradePlan(planKey); } catch(e:any){ console.error(e); setPaymentStep('plans'); setErrorToast(e?.message || 'Checkout failed'); }
   };
 
   // After successful signup, if a plan was pre-selected trigger upgrade flow
@@ -123,6 +117,21 @@ const DatingCopilot = () => {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
+
+  // Post-checkout listener: if Stripe redirects back with session_id, refresh user plan
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if(params.get('session_id')){
+      // Attempt to refresh user plan (webhook should have updated server)
+      refreshUser?.();
+  setUpgradeNotice('Upgrade successful! Enjoy your new features.');
+  setTimeout(() => setUpgradeNotice(null), 5000);
+      // Optional: clean query param for nicer URL
+      const url = new URL(window.location.href);
+      url.searchParams.delete('session_id');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [refreshUser]);
 
   const handleProfilePhotos = (files: FileList | null) => {
     if(!files) return;
@@ -859,6 +868,21 @@ const DatingCopilot = () => {
       )}
 
       {/* Auth Modal */}
+      {/* Upgrade success banner */}
+      {upgradeNotice && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg flex items-center space-x-3 border border-green-400/50">
+          <Check className="w-5 h-5" />
+          <span className="font-medium">{upgradeNotice}</span>
+          <button onClick={() => setUpgradeNotice(null)} className="text-white/70 hover:text-white">×</button>
+        </div>
+      )}
+      {errorToast && (
+        <div className="fixed top-4 right-4 z-50 px-5 py-3 rounded-xl bg-red-600 text-white shadow-lg border border-red-300/40 flex items-center space-x-3 animate-slide-in">
+          <X className="w-4 h-4" />
+          <span className="text-sm font-medium">{errorToast}</span>
+          <button onClick={() => setErrorToast(null)} className="text-white/70 hover:text-white ml-2">Dismiss</button>
+        </div>
+      )}
       {showAuthModal && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="max-w-lg w-full relative">

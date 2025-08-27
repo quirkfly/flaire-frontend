@@ -99,3 +99,19 @@ flaire_db=> \
 invalid command \
 Try \? for help.
 flaire_db=> \q
+
+
+==========
+
+
+± stripe login
+Your pairing code is: nicely-awed-trendy-glory
+This pairing code verifies your authentication with Stripe.
+Press Enter to open the browser or visit https://dashboard.stripe.com/stripecli/confirm_auth?t=XeoQDROhCWSBfe2cS8d0vF5pKl8cJpWJ (^C to quit)
+> Done! The Stripe CLI is configured for your account with account id acct_1MqcMCFny8Plzp66
+
+Please note: this key will expire after 90 days, at which point you'll need to re-authenticate.
+
+
+± stripe listen --forward-to localhost:8000/billing/webhook
+> Ready! You are using Stripe API Version [2022-11-15]. Your webhook signing secret is whsec_42e1781e3af5063d750672945ba78aada479ff49482ad477aa92ea78528600a1 (^C to quit)

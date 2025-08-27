@@ -68,16 +68,40 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signOut = () => { setUser(null); persist(null); };
+  const API_BASE = import.meta?.env?.VITE_API_BASE || 'http://localhost:8000';
+
+  const refreshUser = async () => {
+    if(!user?.token) return;
+    try {
+      const res = await fetch(`${API_BASE}/auth/me`, { headers: { Authorization: `Bearer ${user.token}` }});
+      if(res.ok){
+        const data = await res.json();
+        const merged = { ...user, plan: data.plan };
+        setUser(merged); persist(merged);
+      }
+    } catch(e){ /* swallow */ }
+  };
 
   const upgradePlan = async (plan) => {
     if (!user) throw new Error('Not signed in');
-    await new Promise(r => setTimeout(r, 800));
-    const updated = { ...user, plan };
-    setUser(updated); persist(updated);
+    // Request Stripe Checkout session
+    const res = await fetch(`${API_BASE}/billing/create-checkout-session`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` },
+      body: JSON.stringify({ plan })
+    });
+    if(!res.ok){
+      const msg = await res.text();
+      throw new Error(msg || 'Checkout session failed');
+    }
+    const data = await res.json();
+    if(data.url){
+      window.location.href = data.url; // redirect to Stripe Checkout
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut, upgradePlan }}>
+    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut, upgradePlan, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
